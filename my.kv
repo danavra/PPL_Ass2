@@ -1,0 +1,47 @@
+<MyDropDown>:
+
+
+<MyGrid>:
+
+    mdd: mdd
+    min_minutes: min_minutes
+    max_minutes: max_minutes
+
+    GridLayout:
+        cols:1
+        size: root.width, root.height
+
+        GridLayout:
+            cols:2
+
+            Label:
+                text: "What is your current location? "
+
+            MyDropDown:
+                id:mdd
+
+            Label:
+                text: "How much time would you like to spend(in minutes)? "
+
+            GridLayout:
+                cols:2
+
+                Label:
+                    text:"Between "
+
+                TextInput:
+                    id:min_minutes
+                    input_filter: "int"
+                    multiline:False
+
+                Label:
+                    text:"and "
+
+                TextInput:
+                    id:max_minutes
+                    input_filter: "int"
+                    multiline:False
+
+            Button:
+                text:"Submit"
+                on_press: root.btn()
