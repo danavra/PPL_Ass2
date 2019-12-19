@@ -6,6 +6,7 @@
     mdd: mdd
     min_minutes: min_minutes
     max_minutes: max_minutes
+    num_of_recommendations: num_of_recommendations
 
     GridLayout:
         cols:1
@@ -42,6 +43,14 @@
                     input_filter: "int"
                     multiline:False
 
+            Label:
+                text: "How many location recommendations would you like to receive?"
+
+            TextInput:
+                id:num_of_recommendations
+                input_filter: "int"
+                multiline:False
+
             Button:
                 text:"Submit"
-                on_press: root.btn()
+                on_press: root.submit()

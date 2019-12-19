@@ -52,6 +52,7 @@ class MyGrid(GridLayout):
     mdd = ObjectProperty(None)
     min_minutes = ObjectProperty(None)
     max_minutes = ObjectProperty(None)
+    num_of_recommendations = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(MyGrid, self).__init__(**kwargs)
@@ -60,7 +61,8 @@ class MyGrid(GridLayout):
         buttons = GridLayout()
         buttons.cols = 2
         buttons.add_widget(
-            Button(text='Try Again', font_size=40, on_release=lambda btn: self.reset(reset=False, popup=popup))
+            # Button(text='Try Again', font_size=40, on_release=lambda btn: self.reset(reset=False, popup=popup))
+            Button(text='Try Again', font_size=40, on_release=lambda btn: popup.dismiss())
         )
         buttons.add_widget(
             Button(text='Reset Form', font_size=40, on_release=lambda btn: self.reset(popup=popup))
@@ -81,20 +83,23 @@ class MyGrid(GridLayout):
         if reset:
             self.min_minutes.text = ''
             self.max_minutes.text = ''
+            self.num_of_recommendations.text = ''
             self.mdd.reset()
 
-    def btn(self):
+    def submit(self):
         frame = '-'*30
         if int(self.max_minutes.text) < int(self.min_minutes.text):
-            # self.popup('bad input')
-            temp = self.min_minutes.text
-            self.min_minutes.text = self.max_minutes.text
-            self.max_minutes.text = temp
+            self.popup('bad input')
+            # temp = self.min_minutes.text
+            # self.min_minutes.text = self.max_minutes.text
+            # self.max_minutes.text = temp
+
+        elif int(self.num_of_recommendations.text) <= 0:
+            self.popup(text='No Recommendations Asked', warning=False)
+
         else:
-            message = '{0}\nAt: {1}\nBetween {2} and {3} minutes tour\n{0}'.format(frame,
-                                                                                   self.mdd.text,
-                                                                                   self.min_minutes.text,
-                                                                                   self.max_minutes.text)
+            message = '{0}\nAt: {1}\nBetween {2} and {3} minutes tour\nVisiting in {4} stations\n{0}'.format(
+                frame, self.mdd.text, self.min_minutes.text, self.max_minutes.text, self.num_of_recommendations.text)
             self.popup(message, warning=False)
 
 
