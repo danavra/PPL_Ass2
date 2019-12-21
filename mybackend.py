@@ -2,7 +2,6 @@
 
 import sqlite3
 import csv
-import pandas as pd
 from statistics import mean
 from math import sin, cos, sqrt, atan2, radians
 
@@ -34,15 +33,15 @@ class Database:
             for row in csv_reader:
                 if line_count != 0:
                     cur.execute("INSERT INTO Trips VALUES (?,?,?,?,?,?,?,?,?); ",(row[0], row[4], row[8], row[13], row[14],row[5],row[6],row[9],row[10]))
-                    connection.commit()
                 print("listing #" + str(777000 - line_count))
                 line_count += 1
 
+            connection.commit()
             print(f'Processed {line_count} lines.')
             connection.close()
 
 
-# ////////////////////////////////////////////////////////   new try    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
     def findTrip(self,start,time_low,time_high,riding_level,sex):
@@ -78,6 +77,12 @@ class Database:
         :param riding_level: the skill of the rider (begginer: -1, intermedian: 0, pro: 1)
         :return:  will return a estimated ETA according to the riders skill level
         '''
+
+        setOfETA = set(all_etas) # takes care of only one value (error is when taking only values over or under)
+        if len(setOfETA) == 1:
+            return all_etas[0] / 60
+
+
         total_avg = mean(all_etas)
         if riding_level == 0: #intermide
             return total_avg/60
@@ -86,12 +91,14 @@ class Database:
                 return all_etas[0]/60
 
             if riding_level < 0: #beginner
+
                 return mean(list(filter(lambda x: (x > total_avg),all_etas)))/60
 
             if riding_level > 0: #pro
-                return mean(list(filter(lambda x: (x < total_avg),all_etas)))/60
+                return mean(list(filter(lambda x: (x < total_avg), all_etas))) / 60
+
         except:
-            print(all_etas)
+            print("error: " + str(all_etas))
             return -1
 
 
@@ -180,12 +187,10 @@ class Database:
                 allDistances.append(distance)
 
         return mean(allDistances)
-
         connection.close()
 
 
-
-# /////////////////////////////////////////////////////   new try    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
