@@ -32,12 +32,15 @@ class Database:
             line_count = 0
             for row in csv_reader:
                 if line_count != 0:
+                    if not row[0] or not row[4] or not row[8] or not row[13] or not row[14] or not row[5] or not row[6] or not row[9] or not row[10]:
+                        print('\nbad data\n')
+                        continue
                     cur.execute("INSERT INTO Trips VALUES (?,?,?,?,?,?,?,?,?); ",(row[0], row[4], row[8], row[13], row[14],row[5],row[6],row[9],row[10]))
-                print("listing #" + str(777000 - line_count))
                 line_count += 1
+                print("\rlisting #" + str(line_count),end="")
 
             connection.commit()
-            print(f'Processed {line_count} lines.')
+            print(f'\nProcessed {line_count} lines.')
             connection.close()
 
 
@@ -72,16 +75,19 @@ class Database:
 
     def getETA(self,all_etas,riding_level):
         '''
-        calculattes the estimated eta
+        calculattes the estimated eta based on the riders skill level:
+            example: if you are a intermedian rider, it will return the average time of every body.
+                     if you are a pro/begginer, it will calculate the total avrage, then make an average of only
+                     the etas that are less/more than the total average.
         :param all_etas:  a list of all of the eta's aquiered for the current trip
         :param riding_level: the skill of the rider (begginer: -1, intermedian: 0, pro: 1)
         :return:  will return a estimated ETA according to the riders skill level
         '''
 
         setOfETA = set(all_etas) # takes care of only one value (error is when taking only values over or under)
+
         if len(setOfETA) == 1:
             return all_etas[0] / 60
-
 
         total_avg = mean(all_etas)
         if riding_level == 0: #intermide
