@@ -121,6 +121,7 @@ class Database:
         ans = {}
         cur = connection.cursor()
 
+        #sex does not matter (said no one ever)
         if sex == None:
             cur.execute("SELECT end_location ,duration FROM Trips WHERE start_location = ?",(start,))
         else:
@@ -207,4 +208,4 @@ minTime = 1
 maxTime =10
 level = 1
 sex = 1
-print(db.findTrip('Hilltop',minTime,maxTime,level,sex))
+print(db.findTrip('pizza',minTime,maxTime,level,sex))
