@@ -1,29 +1,27 @@
-
-
 import sqlite3
 import csv
 from statistics import mean
 from math import sin, cos, sqrt, atan2, radians
+import warnings
+
 
 class Database:
 
     def __init__(self):
-        '''
+        """
         creates the table if not allready created
-        '''
+        """
         connection = sqlite3.connect('lite.db')
         cur = connection.cursor()
         cur.execute("CREATE TABLE IF NOT EXISTS Trips (duration INTEGER , start_location VARCHAR , end_location VARCHAR, birthDate INTEGER , sex INTEGER, start_lat NUMERIC, start_lang NUMERIC, end_lat NUMERIC, end_lang NUMERIC )")
         connection.commit()
         connection.close()
 
-
-
     def loadData(self,csvfile):
-        '''
-         loads the data from a csv file to the DB
+        """
+        loads the data from a csv file to the DB
         :param csvfile: csvfile: the local path of the csv file
-        '''
+        """
         connection = sqlite3.connect('lite.db')
         cur = connection.cursor()
 
@@ -42,13 +40,10 @@ class Database:
             connection.commit()
             print(f'\nProcessed {line_count} lines.')
             connection.close()
-
-
 # //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
     def findTrip(self,start,time_low,time_high,riding_level,sex):
-        '''
+        """
         will return the relevant trips
         :param start: the start locations name
         :param time_low: the minimum time (min) of a trip wanted
@@ -56,8 +51,8 @@ class Database:
         :param riding_level: the level of the rider (begginer: -1, intermedian: 0, pro: 1)
         :param sex: the sex of the rider if is a fucking chauvinistic pig (None: good guy, 0: female, 1: male, 2: had an operation)
         :return: a sorted list of locations and their data sorted by the range given
-        '''
-        mid = (time_high +time_low)/2
+        """
+        mid = (time_high + time_low)/2
         end_location = self.getAllEndPoints(start,sex)
         relaventETAs = []
         for location in end_location:
@@ -74,7 +69,7 @@ class Database:
 
 
     def getETA(self,all_etas,riding_level):
-        '''
+        """
         calculattes the estimated eta based on the riders skill level:
             example: if you are a intermedian rider, it will return the average time of every body.
                      if you are a pro/begginer, it will calculate the total avrage, then make an average of only
@@ -82,7 +77,7 @@ class Database:
         :param all_etas:  a list of all of the eta's aquiered for the current trip
         :param riding_level: the skill of the rider (begginer: -1, intermedian: 0, pro: 1)
         :return:  will return a estimated ETA according to the riders skill level
-        '''
+        """
 
         setOfETA = set(all_etas) # takes care of only one value (error is when taking only values over or under)
 
@@ -90,17 +85,17 @@ class Database:
             return all_etas[0] / 60
 
         total_avg = mean(all_etas)
-        if riding_level == 0: #intermide
+        if riding_level == 0: # intermide
             return total_avg/60
         try:
             if len(all_etas) == 1:
                 return all_etas[0]/60
 
-            if riding_level < 0: #beginner
+            if riding_level < 0: # beginner
 
                 return mean(list(filter(lambda x: (x > total_avg),all_etas)))/60
 
-            if riding_level > 0: #pro
+            if riding_level > 0: # pro
                 return mean(list(filter(lambda x: (x < total_avg), all_etas))) / 60
 
         except:
@@ -109,19 +104,19 @@ class Database:
 
 
 
-    def getAllEndPoints(self,start,sex):
-        '''
+    def getAllEndPoints(self, start, sex):
+        """
          retrieves all of the trips that start from the given start point with regards to the sex of the wanted data
         :param start: the start location's name.
         :param sex: (None: use all data, 0: only female data, 1: only male data , 2: only trans data)
         :return: all the end locations + eta that a trip from start to them have been found in the DB
-        '''
+        """
 
         connection = sqlite3.connect('lite.db')
         ans = {}
         cur = connection.cursor()
 
-        #sex does not matter (said no one ever)
+        # sex does not matter (said no one ever)
         if sex == None:
             cur.execute("SELECT end_location ,duration FROM Trips WHERE start_location = ?",(start,))
         else:
@@ -145,14 +140,14 @@ class Database:
 
 
     def calculateAirDistance(self,start_lat,star_lang,end_lat,end_lang):
-        '''
-          will calculate the distance in KM between two coordinates
+        """
+        will calculate the distance in KM between two coordinates
         :param start_lat: start lattitude
         :param star_lang:  start longtitude
         :param end_lat: end lattitude
         :param end_lang: end longtitude
         :return:
-        '''
+        """
         if not star_lang or not start_lat or not end_lang or not end_lat:
             return None
         # approximate radius of earth in km
@@ -174,12 +169,12 @@ class Database:
 
 
     def getDistance(self,start,end):
-        '''
+        """
         will calculate the average distance between two locations out of all the coordinates in the DB
         :param start: start location's name
         :param end: end location's name
         :return: the average distance between two locations
-        '''
+        """
         connection = sqlite3.connect('lite.db')
         allDistances = []
         cur = connection.cursor()
@@ -190,22 +185,47 @@ class Database:
 
         for row in rows:
             distance = self.calculateAirDistance(row[0], row[1], row[2], row[3])
-            if distance != None:
+            if distance is not None:
                 allDistances.append(distance)
 
         return mean(allDistances)
         connection.close()
 
+    def get_start_points(self):
+        """
+        retrieves all of the starting points from the db
+        :return: all the starting points in the db as list
+        """
+
+        connection = sqlite3.connect('lite.db')
+        ans = []
+        cur = connection.cursor()
+
+        cur.execute("SELECT DISTINCT start_location FROM Trips order by start_location")
+
+        rows = cur.fetchall()
+
+        for row in rows:
+            ans.append(row[0].replace('\'', ''))
+
+        connection.close()
+
+        return ans
+
 
 # ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+def test():
+    db = Database()
+    # db.loadData('BikeShare.csv')
+    minTime = 1
+    maxTime =10
+    level = 1
+    sex = 1
+    print(db.findTrip('Christ Hospital', minTime, maxTime, level, sex))
 
 
-
-db = Database()
-# db.loadData('BikeShare.csv')
-minTime = 1
-maxTime =10
-level = 1
-sex = 1
-print(db.findTrip('pizza',minTime,maxTime,level,sex))
+if __name__ == '__main__':
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        test()

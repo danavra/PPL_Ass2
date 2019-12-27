@@ -1,12 +1,13 @@
-<MyDropDown>:
-
+<DropDownMenu>:
 
 <MyGrid>:
 
-    mdd: mdd
+    location_dd: location_dd
     min_minutes: min_minutes
     max_minutes: max_minutes
     num_of_recommendations: num_of_recommendations
+    level_dd:level_dd
+    gender_dd:gender_dd
 
     GridLayout:
         cols:1
@@ -18,8 +19,8 @@
             Label:
                 text: "What is your current location? "
 
-            MyDropDown:
-                id:mdd
+            DropDownMenu:
+                id:location_dd
 
             Label:
                 text: "How much time would you like to spend(in minutes)? "
@@ -44,7 +45,19 @@
                     multiline:False
 
             Label:
-                text: "How many location recommendations would you like to receive?"
+                text:"Level: "
+
+            DropDownMenu:
+                id:level_dd
+
+            Label:
+                text:"Gender: "
+
+            DropDownMenu:
+                id:gender_dd
+
+            Label:
+                text: "How many recommendations\nwould you like to receive?"
 
             TextInput:
                 id:num_of_recommendations
