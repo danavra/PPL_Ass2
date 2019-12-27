@@ -1,14 +1,19 @@
 antiorm==1.2.1
 certifi==2019.11.28
 chardet==3.0.4
+Click==7.0
 db==0.1.1
 db-sqlite3==0.0.1
 docutils==0.15.2
+Flask==1.1.1
 idna==2.8
+itsdangerous==1.1.0
+Jinja2==2.10.3
 Kivy==1.11.1
 kivy-deps.glew==0.1.12
 kivy-deps.sdl2==0.1.22
 Kivy-Garden==0.1.4
+MarkupSafe==1.1.1
 numpy==1.17.4
 pandas==0.25.3
 Pygments==2.5.2
@@ -19,3 +24,4 @@ pywin32==227
 requests==2.22.0
 six==1.13.0
 urllib3==1.25.7
+Werkzeug==0.16.0
