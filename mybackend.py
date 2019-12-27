@@ -3,6 +3,7 @@ import csv
 from statistics import mean
 from math import sin, cos, sqrt, atan2, radians
 import warnings
+import os
 
 
 class Database:
@@ -11,21 +12,24 @@ class Database:
         """
         creates the table if not allready created
         """
-        connection = sqlite3.connect('lite.db')
-        cur = connection.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS Trips (duration INTEGER , start_location VARCHAR , end_location VARCHAR, birthDate INTEGER , sex INTEGER, start_lat NUMERIC, start_lang NUMERIC, end_lat NUMERIC, end_lang NUMERIC )")
-        connection.commit()
-        connection.close()
+        if not os.path.exists('{path}{sep}lite.db'.format(path=os.getcwd(), sep=os.sep)):
+            connection = sqlite3.connect('lite.db')
+            cur = connection.cursor()
+            cur.execute(
+                "CREATE TABLE IF NOT EXISTS Trips (duration INTEGER , start_location VARCHAR , end_location VARCHAR, birthDate INTEGER , sex INTEGER, start_lat NUMERIC, start_lang NUMERIC, end_lat NUMERIC, end_lang NUMERIC )")
+            connection.commit()
+            self.__loadData('{0}{1}BikeShare.csv'.format(os.getcwd(), os.sep), connection)
+            connection.close()
 
-    def loadData(self,csvfile):
+    def __loadData(self,csvfile, connection):
         """
         loads the data from a csv file to the DB
         :param csvfile: csvfile: the local path of the csv file
         """
-        connection = sqlite3.connect('lite.db')
+        # connection = sqlite3.connect('lite.db')
         cur = connection.cursor()
 
-        with open('BikeShare.csv') as csv_file:
+        with open(csvfile) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             line_count = 0
             for row in csv_reader:
@@ -39,7 +43,7 @@ class Database:
 
             connection.commit()
             print(f'\nProcessed {line_count} lines.')
-            connection.close()
+            # connection.close()
 # //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     def findTrip(self,start,time_low,time_high,riding_level,sex):
@@ -218,7 +222,6 @@ class Database:
 
 def test():
     db = Database()
-    # db.loadData('BikeShare.csv')
     minTime = 1
     maxTime =10
     level = 1
