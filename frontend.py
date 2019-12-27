@@ -71,10 +71,10 @@ class MyGrid(GridLayout):
         self.location_dd.set_options({x: x for x in db.get_start_points()})
         self.level_dd.set_tag('Level')
         self.level_dd.set_options({'Pro': 1, 'Average Joe': 0, 'Beginner': -1})
-        self.gender_dd.set_tag('Gender')
-        self.gender_dd.set_options({'Female': 0, 'Male': 1, 'Irrelevant': 2})
+        self.gender_dd.set_tag('Gender(optional)')
+        self.gender_dd.set_options({'Female': 0, 'Male': 1, 'Other': 2})
 
-    def popup(self, message, warning=True):
+    def popup(self, message, warning=True, title='Popup'):
         buttons = GridLayout()
         buttons.cols = 2
         buttons.add_widget(
@@ -91,13 +91,14 @@ class MyGrid(GridLayout):
         elif isinstance(message, list):
             lbl_txt = []
             for o in message:
-                lbl_txt.append('{dest}: {time} minutes'.format(dest=o['destination'], time=o['eta']))
+                lbl_txt.append('{dest}: {time} minutes, {dist} km'.format(dest=o['destination'], time=o['eta'],
+                                                                          dist=o['Distance']))
             content.add_widget(Label(text='\n'.join(lbl_txt)))
         content.add_widget(
             buttons if warning else Button(text='OK', font_size=40, on_release=lambda btn: self.reset(popup=popup))
         )
 
-        popup = Popup(title='Test popup', content=content, auto_dismiss=False)
+        popup = Popup(title=title, content=content, auto_dismiss=False)
         popup.open()
 
     def reset(self, reset=True, popup=None):
@@ -112,32 +113,34 @@ class MyGrid(GridLayout):
 
     def submit(self):
         frame = '-'*30
-        if self.max_minutes.text == '' or self.min_minutes.text == '':
-            self.popup('Please type your time range')
+        if not self.location_dd.value:
+            self.popup('You must select a start location')
+            return
+        if self.min_minutes.text == '' and self.max_minutes.text == '':
+            self.popup('You must enter a time for your trip')
+            return
+        elif self.min_minutes.text == '':
+            self.min_minutes.text = self.max_minutes.text
+        elif self.max_minutes.text == '':
+            self.max_minutes.text = self.min_minutes.text
+        elif int(self.max_minutes.text) < int(self.min_minutes.text):
+            temp = self.min_minutes.text
+            self.min_minutes.text = self.max_minutes.text
+            self.max_minutes.text = temp
+        if not self.level_dd.value:
+            self.level_dd.select(None, 'Average Joe')
 
-        if int(self.max_minutes.text) < int(self.min_minutes.text):
-            self.popup('bad input')
-            # temp = self.min_minutes.text
-            # self.min_minutes.text = self.max_minutes.text
-            # self.max_minutes.text = temp
+        elif self.num_of_recommendations.text != '' and int(self.num_of_recommendations.text) <= 0:
+            self.popup(message='Recommendations number must be greater than 0')
+            return
 
-        elif int(self.num_of_recommendations.text) <= 0:
-            self.popup(message='No Recommendations Asked', warning=False)
-
-        else:
-            list_message = [frame, 'At: %s' % self.location_dd.text,
-                            'Between {0} and {1} minutes'.format(self.min_minutes.text, self.max_minutes.text),
-                            'Visiting in %s stations' % self.num_of_recommendations.text,
-                            'Level: %s' % self.level_dd.text, 'Gender: %s' % self.gender_dd.text, frame]
-            # self.popup('\n'.join(list_message), warning=False)
-            start = self.location_dd.value
-            minmin = int(self.min_minutes.text)
-            maxmin = int(self.max_minutes.text)
-            level = self.level_dd.value
-            sex = self.gender_dd.value
-            ans = self.db.findTrip(self.location_dd.value, int(self.min_minutes.text), int(self.max_minutes.text),
-                                   self.level_dd.value, self.gender_dd.value)
-            self.popup(ans)
+        kwargs = {'start': self.location_dd.value, 'time_low': int(self.min_minutes.text),
+                  'time_high': int(self.max_minutes.text), 'riding_level': self.level_dd.value,
+                  'sex': self.gender_dd.value}
+        response = self.db.findTrip(**kwargs)
+        n = min(int(self.num_of_recommendations.text) if self.num_of_recommendations.text != '' else -1, len(response))
+        ans = response[:n]
+        self.popup(ans)
 
 
 class MyApp(App):
