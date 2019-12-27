@@ -5,7 +5,12 @@ from mybackend import Database
 
 app = Flask(__name__)
 
-
+'''
+a get API request
+:param: startlocation: the name of the start location
+:param: timeduration: the total time of the trip wanted
+:param:
+'''
 @app.route('/', methods=['GET'])
 def view():
     try:
@@ -21,6 +26,8 @@ def view():
         if k < 0:
             raise Exception('k <= 0 error')
         print(points)
+
+        #get max k answers
         points = points[:k]
         ans = list()
 
