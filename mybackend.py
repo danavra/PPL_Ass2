@@ -53,6 +53,7 @@ class Database:
         :return: a sorted list of locations and their data sorted by the range given
         """
         mid = (time_high + time_low)/2
+        time_low, time_high = (time_low-1, time_high+1) if time_low == time_high else (time_low, time_high)
         end_location = self.getAllEndPoints(start,sex)
         relaventETAs = []
         for location in end_location:

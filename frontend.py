@@ -8,6 +8,8 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 import pandas as pd
 from kivy.uix.popup import Popup
+from kivy.uix.scrollview import ScrollView
+
 from mybackend import Database
 import warnings
 import os
@@ -74,7 +76,7 @@ class MyGrid(GridLayout):
         self.gender_dd.set_tag('Gender(optional)')
         self.gender_dd.set_options({'Female': 0, 'Male': 1, 'Other': 2})
 
-    def popup(self, message, warning=True, title='Popup'):
+    def popup(self, message, warning=True, title='Warning'):
         buttons = GridLayout()
         buttons.cols = 2
         buttons.add_widget(
@@ -89,11 +91,28 @@ class MyGrid(GridLayout):
         if isinstance(message, str):
             content.add_widget(Label(text=message))
         elif isinstance(message, list):
-            lbl_txt = []
+            scroll_view = ScrollView()
+            results = GridLayout()
+            results.cols = 4
+            results.add_widget(Label(text='Number'))
+            results.add_widget(Label(text='Destination'))
+            results.add_widget(Label(text='Time(minutes)'))
+            results.add_widget(Label(text='Distance(KM)'))
+            content.add_widget(results)
+            i = 1
+            results = GridLayout()
+            results.cols = 1
             for o in message:
-                lbl_txt.append('{dest}: {time} minutes, {dist} km'.format(dest=o['destination'], time=o['eta'],
-                                                                          dist=o['Distance']))
-            content.add_widget(Label(text='\n'.join(lbl_txt)))
+                row = GridLayout()
+                row.cols = 4
+                row.add_widget(Label(text='%d' % i))
+                i += 1
+                row.add_widget(Label(text=o['destination']))
+                row.add_widget(Label(text='%.2f' % o['eta']))
+                row.add_widget(Label(text='%.2f' % o['Distance']))
+                results.add_widget(row)
+            scroll_view.add_widget(results)
+            content.add_widget(scroll_view)
         content.add_widget(
             buttons if warning else Button(text='OK', font_size=40, on_release=lambda btn: self.reset(popup=popup))
         )
@@ -112,7 +131,6 @@ class MyGrid(GridLayout):
             self.level_dd.reset()
 
     def submit(self):
-        frame = '-'*30
         if not self.location_dd.value:
             self.popup('You must select a start location')
             return
@@ -127,7 +145,8 @@ class MyGrid(GridLayout):
             temp = self.min_minutes.text
             self.min_minutes.text = self.max_minutes.text
             self.max_minutes.text = temp
-        if not self.level_dd.value:
+
+        if self.level_dd.value is None:
             self.level_dd.select(None, 'Average Joe')
 
         elif self.num_of_recommendations.text != '' and int(self.num_of_recommendations.text) <= 0:
@@ -140,7 +159,7 @@ class MyGrid(GridLayout):
         response = self.db.findTrip(**kwargs)
         n = min(int(self.num_of_recommendations.text) if self.num_of_recommendations.text != '' else -1, len(response))
         ans = response[:n]
-        self.popup(ans)
+        self.popup(ans, title='Results')
 
 
 class MyApp(App):
