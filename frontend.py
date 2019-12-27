@@ -9,6 +9,8 @@ from kivy.uix.label import Label
 import pandas as pd
 from kivy.uix.popup import Popup
 from mybackend import Database
+import warnings
+import os
 
 
 class DropDownMenu(BoxLayout):
@@ -145,4 +147,6 @@ class MyApp(App):
 
 
 if __name__ == "__main__":
-    MyApp().run()
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        MyApp().run()
