@@ -10,7 +10,7 @@ class Database:
 
     def __init__(self):
         """
-        creates the table if not allready created
+        if the db file does not exist, creates the table and injects the file BikeShare.csv
         """
         if not os.path.exists('{path}{sep}lite.db'.format(path=os.getcwd(), sep=os.sep)):
             connection = sqlite3.connect('lite.db')
@@ -25,6 +25,7 @@ class Database:
         """
         loads the data from a csv file to the DB
         :param csvfile: csvfile: the local path of the csv file
+        :param connection: an open connection
         """
         # connection = sqlite3.connect('lite.db')
         cur = connection.cursor()
@@ -217,19 +218,3 @@ class Database:
 
         return ans
 
-
-# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-def test():
-    db = Database()
-    minTime = 1
-    maxTime =10
-    level = 1
-    sex = 1
-    print(db.findTrip('Christ Hospital', minTime, maxTime, level, sex))
-
-
-if __name__ == '__main__':
-    with warnings.catch_warnings():
-        warnings.simplefilter('ignore')
-        test()
