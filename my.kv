@@ -17,19 +17,30 @@
             cols:2
 
             Label:
-                text: "What is your current location? "
+                text: "Current Location "
+                size_hint_x:.3
 
             DropDownMenu:
                 id:location_dd
+                size_hint_x:.7
+
+        GridLayout:
+            cols:2
+            center: root.width/2, root.height/2
 
             Label:
-                text: "How much time would you like to spend(in minutes)? "
+                text: "Trip Time "
+                size_hint_x:.3
 
             GridLayout:
-                cols:2
+                cols:4
+                size_hint_x: .7
+                row_default_height: 30
+                row_force_default: True
 
                 Label:
                     text:"Between "
+                    size_hint_x: .3
 
                 TextInput:
                     id:min_minutes
@@ -38,32 +49,51 @@
 
                 Label:
                     text:"and "
+                    size_hint_x: .3
 
                 TextInput:
                     id:max_minutes
                     input_filter: "int"
                     multiline:False
 
+        GridLayout:
+            cols:2
+
             Label:
                 text:"Level: "
+                size_hint_x: .3
 
             DropDownMenu:
                 id:level_dd
+                size_hint_x: .7
+
+        GridLayout:
+            cols:2
 
             Label:
                 text:"Gender: "
+                width:root.width*0.3
+                size_hint_x: .3
 
             DropDownMenu:
                 id:gender_dd
+                size_hint_x: .7
+
+        GridLayout:
+            cols:2
 
             Label:
-                text: "How many recommendations\nwould you like to receive?"
+                text: "Number of recommendations "
+                size_hint_x: .3
 
             TextInput:
                 id:num_of_recommendations
                 input_filter: "int"
                 multiline:False
+                size_hint_x: .7
 
-            Button:
-                text:"Submit"
-                on_press: root.submit()
+
+        Button:
+            text:"Submit"
+            on_press: root.submit()
+            height: root.height*0.3
