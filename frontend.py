@@ -73,51 +73,57 @@ class MyGrid(GridLayout):
         self.location_dd.set_options({x: x for x in db.get_start_points()})
         self.level_dd.set_tag('Level')
         self.level_dd.set_options({'Pro': 1, 'Average Joe': 0, 'Beginner': -1})
-        self.gender_dd.set_tag('Gender(optional)')
+        self.gender_dd.set_tag('Gender')
         self.gender_dd.set_options({'Female': 0, 'Male': 1, 'Other': 2})
 
-    def popup(self, message, warning=True, title='Warning'):
-        buttons = GridLayout()
-        buttons.cols = 2
-        buttons.add_widget(
-            # Button(text='Try Again', font_size=40, on_release=lambda btn: self.reset(reset=False, popup=popup))
-            Button(text='Try Again', font_size=40, on_release=lambda btn: popup.dismiss())
-        )
-        buttons.add_widget(
-            Button(text='Reset Form', font_size=40, on_release=lambda btn: self.reset(popup=popup))
-        )
+    def warning_popup(self, message):
+        buttons = GridLayout(cols=2, size_hint_y=0.25)
+        buttons.add_widget(Button(text='Try Again', font_size=40, on_release=lambda btn: popup.dismiss()))
+        buttons.add_widget(Button(text='Reset Form', font_size=40, on_release=lambda btn: self.reset(popup=popup)))
+
         content = GridLayout()
         content.cols = 1
-        if isinstance(message, str):
-            content.add_widget(Label(text=message))
-        elif isinstance(message, list):
-            scroll_view = ScrollView()
-            results = GridLayout()
-            results.cols = 4
-            results.add_widget(Label(text='Number'))
-            results.add_widget(Label(text='Destination'))
-            results.add_widget(Label(text='Time(minutes)'))
-            results.add_widget(Label(text='Distance(KM)'))
-            content.add_widget(results)
-            i = 1
-            results = GridLayout()
-            results.cols = 1
-            for o in message:
-                row = GridLayout()
-                row.cols = 4
-                row.add_widget(Label(text='%d' % i))
-                i += 1
-                row.add_widget(Label(text=o['destination']))
-                row.add_widget(Label(text='%.2f' % o['eta']))
-                row.add_widget(Label(text='%.2f' % o['Distance']))
-                results.add_widget(row)
-            scroll_view.add_widget(results)
-            content.add_widget(scroll_view)
-        content.add_widget(
-            buttons if warning else Button(text='OK', font_size=40, on_release=lambda btn: self.reset(popup=popup))
-        )
+        content.add_widget(Label(text=message))
+        content.add_widget(buttons)
 
-        popup = Popup(title=title, content=content, auto_dismiss=False)
+        popup = Popup(title='Warning', content=content, auto_dismiss=False)
+        popup.open()
+
+    def results_popup(self, locations, summarize=None):
+        buttons = GridLayout(cols=1, size_hint_y=0.25)
+        buttons.add_widget(Button(text='OK', font_size=40, on_release=lambda btn: self.reset(popup=popup)))
+
+        content = GridLayout()
+        content.cols = 1
+        scroll_view = ScrollView()
+        results = GridLayout(cols=4, size_hint_y=0.25)
+        results.add_widget(Label(text='Number'))
+        results.add_widget(Label(text='Destination'))
+        results.add_widget(Label(text='Time(minutes)'))
+        results.add_widget(Label(text='Distance(KM)'))
+        content.add_widget(results)
+        i = 1
+        results = GridLayout(cols=1, spacing=10, size_hint_y=None, size_hint_x=1)
+        results.bind(minimum_height=results.setter('height'))
+        for o in locations:
+            row = GridLayout(cols=4, spacing=2, size_hint_y=None, size_hint_x=1)
+            row.add_widget(Label(text='%d' % i))
+            i += 1
+            row.add_widget(Label(text=o['destination']))
+            row.add_widget(Label(text='%.2f' % o['eta']))
+            row.add_widget(Label(text='%.2f' % o['Distance']))
+            results.add_widget(row)
+        if summarize:
+            row = GridLayout(cols=3, spacing=2, size_hint_y=None, size_hint_x=1)
+            row.add_widget(Label(text='{display}/{all} Records Retrieved'.format(display=len(locations), all=summarize)))
+            row.add_widget(Label(text=''))
+            row.add_widget(Label(text=''))
+            results.add_widget(row)
+        scroll_view.add_widget(results)
+        content.add_widget(scroll_view)
+        content.add_widget(buttons)
+
+        popup = Popup(title='Results', content=content, auto_dismiss=False)
         popup.open()
 
     def reset(self, reset=True, popup=None):
@@ -129,13 +135,14 @@ class MyGrid(GridLayout):
             self.num_of_recommendations.text = ''
             self.location_dd.reset()
             self.level_dd.reset()
+            self.gender_dd.reset()
 
     def submit(self):
         if not self.location_dd.value:
-            self.popup('You must select a start location')
+            self.warning_popup('You must select a start location')
             return
         if self.min_minutes.text == '' and self.max_minutes.text == '':
-            self.popup('You must enter a time for your trip')
+            self.warning_popup('You must enter a time for your trip')
             return
         elif self.min_minutes.text == '':
             self.min_minutes.text = self.max_minutes.text
@@ -150,7 +157,7 @@ class MyGrid(GridLayout):
             self.level_dd.select(None, 'Average Joe')
 
         elif self.num_of_recommendations.text != '' and int(self.num_of_recommendations.text) <= 0:
-            self.popup(message='Recommendations number must be greater than 0')
+            self.warning_popup('Recommendations number must be greater than 0')
             return
 
         kwargs = {'start': self.location_dd.value, 'time_low': int(self.min_minutes.text),
@@ -159,7 +166,7 @@ class MyGrid(GridLayout):
         response = self.db.findTrip(**kwargs)
         n = min(int(self.num_of_recommendations.text) if self.num_of_recommendations.text != '' else -1, len(response))
         ans = response[:n]
-        self.popup(ans, title='Results')
+        self.results_popup(ans, summarize=len(response))
 
 
 class MyApp(App):
