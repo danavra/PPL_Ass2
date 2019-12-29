@@ -12,8 +12,9 @@ class Database:
         """
         if the db file does not exist, creates the table and injects the file BikeShare.csv
         """
-        if not os.path.exists('{path}{sep}lite.db'.format(path=os.getcwd(), sep=os.sep)):
-            connection = sqlite3.connect('lite.db')
+        # p = '{path}{sep}database.db'.format(path=os.getcwd(), sep=os.sep)
+        if not os.path.exists(os.path.join(os.getcwd(), 'database.db')):
+            connection = sqlite3.connect('database.db')
             cur = connection.cursor()
             cur.execute(
                 "CREATE TABLE IF NOT EXISTS Trips (duration INTEGER , start_location VARCHAR , end_location VARCHAR, birthDate INTEGER , sex INTEGER, start_lat NUMERIC, start_lang NUMERIC, end_lat NUMERIC, end_lang NUMERIC )")
@@ -27,7 +28,7 @@ class Database:
         :param csvfile: csvfile: the local path of the csv file
         :param connection: an open connection
         """
-        # connection = sqlite3.connect('lite.db')
+        # connection = sqlite3.connect('database.db')
         cur = connection.cursor()
 
         with open(csvfile) as csv_file:
@@ -118,7 +119,7 @@ class Database:
         :return: all the end locations + eta that a trip from start to them have been found in the DB
         """
 
-        connection = sqlite3.connect('lite.db')
+        connection = sqlite3.connect('database.db')
         ans = {}
         cur = connection.cursor()
 
@@ -181,13 +182,13 @@ class Database:
         :param end: end location's name
         :return: the average distance between two locations
         """
-        connection = sqlite3.connect('lite.db')
+        connection = sqlite3.connect('database.db')
         allDistances = []
         cur = connection.cursor()
         cur.execute("SELECT start_lat,start_lang,end_lat,end_lang FROM Trips WHERE (start_location = ? AND end_location = ?)",(start,end))
         rows = cur.fetchall()
         if len(rows) == 0:
-           return None
+            return None
 
         for row in rows:
             distance = self.calculateAirDistance(row[0], row[1], row[2], row[3])
@@ -203,7 +204,7 @@ class Database:
         :return: all the starting points in the db as list
         """
 
-        connection = sqlite3.connect('lite.db')
+        connection = sqlite3.connect('database.db')
         ans = []
         cur = connection.cursor()
 

@@ -133,6 +133,7 @@ class MyGrid(GridLayout):
         :param locations: (list of dicts) the results of locations and details for the trip (from db)
         :param summarize: (int) how many answer there are in db
         """
+        summarize = summarize if summarize is not None else len(locations)
         buttons = GridLayout(cols=1, size_hint_y=0.25)
         buttons.add_widget(Button(text='OK', font_size=40, on_release=lambda btn: self.reset(popup=popup)))
 
@@ -148,12 +149,12 @@ class MyGrid(GridLayout):
         i = 1
         results = GridLayout(cols=1, spacing=10, size_hint_y=None, size_hint_x=1)
         results.bind(minimum_height=results.setter('height'))
-        if summarize:
-            row = GridLayout(cols=3, spacing=2, size_hint_y=None, size_hint_x=1)
-            row.add_widget(Label(text='{display}/{all} Records Retrieved'.format(display=len(locations), all=summarize)))
-            row.add_widget(Label(text=''))
-            row.add_widget(Label(text=''))
-            results.add_widget(row)
+        # if summarize:
+        #     row = GridLayout(cols=3, spacing=2, size_hint_y=None, size_hint_x=1)
+        #     row.add_widget(Label(text='{display}/{all} Records Retrieved'.format(display=len(locations), all=summarize)))
+        #     row.add_widget(Label(text=''))
+        #     row.add_widget(Label(text=''))
+        #     results.add_widget(row)
 
         for o in locations:
             row = GridLayout(cols=4, spacing=2, size_hint_y=None, size_hint_x=1)
@@ -168,7 +169,7 @@ class MyGrid(GridLayout):
         content.add_widget(buttons)
 
         popup = Popup(
-            title='Results:{t}{recs}/{all} Records Retrieved'.format(t=' '*20, recs=len(locations), all=summarize),
+            title='Results:{t} Displaying {recs}/{all} Records'.format(t=' '*30, recs=len(locations), all=summarize),
             content=content,
             auto_dismiss=False
         )
@@ -230,7 +231,8 @@ class MyGrid(GridLayout):
         response = self.db.findTrip(**kwargs)  # request the trip from db
 
         # get the required recommendations number (or all of them if required number is greater)
-        n = min(int(self.num_of_recommendations.text) if self.num_of_recommendations.text != '' else -1, len(response))
+        n = min(int(self.num_of_recommendations.text) if self.num_of_recommendations.text != '' else len(response),
+                len(response))
         ans = response[:n]
         self.results_popup(ans, summarize=len(response))  # popup the results with summarization of the results
 
